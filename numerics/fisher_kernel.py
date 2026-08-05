@@ -29,11 +29,12 @@ from scipy.linalg import qr, solve_triangular, svdvals
 
 def panel_quadrature(edges, order=16):
     x0, w0 = leggauss(order)
-    xs, ws = [], []
-    for left, right in zip(edges[:-1], edges[1:]):
-        xs.extend(0.5 * (right - left) * x0 + 0.5 * (right + left))
-        ws.extend(0.5 * (right - left) * w0)
-    return np.asarray(xs), np.asarray(ws)
+    edges = np.asarray(edges, dtype=float)
+    left, right = edges[:-1], edges[1:]
+    half, mid = 0.5 * (right - left), 0.5 * (right + left)
+    xs = (half[:, None] * x0[None, :] + mid[:, None]).ravel()
+    ws = (half[:, None] * w0[None, :]).ravel()
+    return xs, ws
 
 
 def quadrature(order=16):
@@ -47,17 +48,21 @@ def quadrature(order=16):
 
 
 def adaptive_quadrature(rates, taus, order=16, per_period=8, per_decay=6,
-                        tail_decades=45.0, fast_decays=30.0):
+                        tail_decades=45.0, fast_decays=30.0, detector_decays=12.0):
     """Panel layout driven by the poles actually present.
 
     The fixed layout above was tuned for two well-separated real poles.  With
     more modes the Fisher integrand b_i b_j / p is set by the *fastest* pole
     while the density in the denominator decays at the *slowest*, so the ratio
     is sharply peaked near the origin on a scale the fixed panels never see.
-    Here the panel width is capped by whichever is smallest of the fastest
-    oscillation period, the fastest decay time, and the finest detector, out to
-    where the fast modes have died; beyond that only the slow tail remains and
-    the panels coarsen.
+
+    Each feature imposes a panel width only over the interval where it is still
+    alive: a detector of constant tau over [0, 12 tau], the fastest pole and the
+    fastest oscillation over [0, 30/max Re], and the slowest pole everywhere.
+    Because every constraint's range is proportional to its own width, the panel
+    count is bounded by the resolution settings alone and cannot blow up when
+    the poles happen to span many decades -- a naive single-zone layout reaches
+    4e5 nodes on ordinary draws from the pole search.
     """
     rates = np.asarray(rates, dtype=complex)
     re, im = np.real(rates), np.abs(np.imag(rates))
@@ -65,17 +70,23 @@ def adaptive_quadrature(rates, taus, order=16, per_period=8, per_decay=6,
     if np.any(re <= 0):
         raise ValueError("all rates must have positive real part")
 
-    fast_re, slow_re = re.max(), re.min()
-    h_fast = min(1.0 / (per_decay * fast_re), taus.min() / per_decay)
-    if im.max() > 0:
-        h_fast = min(h_fast, 2.0 * np.pi / (per_period * im.max()))
-    t_fast = min(fast_decays / fast_re, tail_decades / slow_re)
-    t_max = max(tail_decades / slow_re, taus.max() * tail_decades)
+    # the convolved modes carry the detector poles 1/tau as well as the density's
+    fast_re = re.max()
+    slow_re = min(re.min(), (1.0 / taus).min())
+    t_max = tail_decades / slow_re
 
-    edges = list(np.arange(0.0, t_fast, h_fast)) + [t_fast]
-    h_slow = max(1.0 / (per_decay * slow_re), h_fast)
-    if t_max > t_fast:
-        edges += list(np.arange(t_fast + h_slow, t_max, h_slow)) + [t_max]
+    # (range, width) pairs; each is active on [0, range)
+    limits = [(detector_decays * tau, tau / per_decay) for tau in taus]
+    limits.append((fast_decays / fast_re, 1.0 / (per_decay * fast_re)))
+    if im.max() > 0:
+        limits.append((fast_decays / fast_re, 2.0 * np.pi / (per_period * im.max())))
+    h_slow = 1.0 / (per_decay * slow_re)
+
+    edges, t = [0.0], 0.0
+    while t < t_max:
+        h = min([h_slow] + [w for r, w in limits if t < r])
+        t = min(t + h, t_max)
+        edges.append(t)
     return panel_quadrature(np.asarray(edges), order)
 
 

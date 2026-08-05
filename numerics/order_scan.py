@@ -43,11 +43,18 @@ def quantum_summary(gamma_phi, kmax):
 
 
 def monotone_envelope(raw):
-    """PH_n is nested, so rho_n cannot decrease in n.
+    """PH_n is nested at FIXED K, so rho_n cannot decrease in n.
 
     A drop means the search at that order failed to converge, which would
     understate the classical bound and overstate the violation.  The envelope
     is applied but the raw value is always kept alongside it.
+
+    The nesting does not hold across K, and the envelope must never be taken
+    over it: raising K adds a constraint on the same n weights, so a class that
+    was non-empty at K can be empty at K+1.  Order-2 matching (m1, m2) is a
+    one-parameter family, while order-2 matching (m1, m2, m3) is four
+    constraints on two weights and generically empty.  rho at (n=3, K=3) coming
+    out below rho at (n=2, K=2) is therefore expected, not a convergence bug.
     """
     out, running = [], -np.inf
     for value in raw:

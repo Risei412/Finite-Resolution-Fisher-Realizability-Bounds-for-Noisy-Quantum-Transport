@@ -113,8 +113,16 @@ def pole_layouts(n):
     return [(n - 2 * j, j) for j in range(n // 2 + 1)]
 
 
+# Log-coordinate box for the pole search.  Rates outside it are physically
+# irrelevant here -- m1 is ~20, so no pole can be slower than ~1/m1 without the
+# weights diverging -- and letting the projection wander outside overflows
+# 1/rate**k in the moment matrix and hands LAPACK a matrix full of inf.
+LOG_RATE_LO, LOG_RATE_HI = -12.0, 12.0
+
+
 def build_rates(z, n_real, n_pair):
     """Map unconstrained coordinates to a conjugation-closed rate set."""
+    z = np.clip(np.asarray(z, dtype=float), LOG_RATE_LO, LOG_RATE_HI)
     reals = np.exp(z[:n_real])
     rest = z[n_real:]
     rates = list(reals.astype(complex))
@@ -225,9 +233,11 @@ def project_to_variety(z, n_real, n_pair, targets):
     random sampling lands on it with probability zero.  Raising K is precisely
     what tightens the relaxation, so the search has to project first.
     """
+    z = np.clip(np.asarray(z, dtype=float), LOG_RATE_LO + 1e-6, LOG_RATE_HI - 1e-6)
     try:
         res = least_squares(moment_residual_vector, z, method="trf",
                             args=(n_real, n_pair, targets),
+                            bounds=(LOG_RATE_LO, LOG_RATE_HI),
                             xtol=1e-15, ftol=1e-15, gtol=1e-15, max_nfev=600)
     except Exception:
         return z, np.inf

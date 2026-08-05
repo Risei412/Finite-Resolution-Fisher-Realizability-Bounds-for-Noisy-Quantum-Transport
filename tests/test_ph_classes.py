@@ -145,6 +145,40 @@ def test_weight_system_is_over_determined_once_k_reaches_n():
 # --------------------------------------------------------------------------
 
 
+def test_matching_four_moments_over_determines_order_three_further():
+    """K=4 leaves 5 constraints on 3 weights -- codimension 2, not 1.
+
+    Empirically no order-3 pole set with a nonnegative density survives at
+    K=4, which would falsify order 3 from the moments alone and leave the
+    Fisher ratio doing no work.  K=3 is the setting where the class is still
+    populated and the ratio is what does the falsifying.
+    """
+    m = quantum_moments(0.0, 4)
+    rates = np.array([0.05, 0.6, 5.0], dtype=complex)
+    amat = pc.moment_matrix(rates, 4)
+    assert amat.shape == (5, 3)
+    _, resid = pc.coeffs_from_moments(rates, m)
+    assert resid > 1e-8
+
+
+def test_relaxed_maximizer_at_order_three_stays_under_the_quantum_ratio():
+    """Regression on the Phase 1a result: rho_relaxed(n=3, K=3) ~= 28.2.
+
+    Locks the maximizer located by the search rather than re-running it.  The
+    bound only has to fall below rho_quantum = 156.86 to certify the witness at
+    order 3; it does not have to be tight, and it is not -- the maximizer sits
+    on the positivity boundary, which is outside the phase-type class proper.
+    """
+    m = quantum_moments(0.0, 3)
+    rates = np.array([0.04568371, 0.05148707, 4.97113451], dtype=complex)
+    coeffs, resid = pc.coeffs_from_moments(rates, m)
+    assert resid < 1e-7
+    rho = pc.rho_of_modes(rates, coeffs, TAU_FINE, TAU_COARSE, grid=(20, 16, 12))
+    assert rho is not None
+    assert 27.0 < rho < 29.5
+    assert rho < ROW0["rho_quantum"]
+
+
 def test_rho_of_modes_reproduces_the_ph2_bound():
     m1, cv2 = ROW0["m1"], ROW0["cv2"]
     root = np.sqrt(2.0 * cv2 - 1.0)

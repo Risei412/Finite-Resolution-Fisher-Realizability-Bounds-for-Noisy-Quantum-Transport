@@ -346,53 +346,94 @@ def unpack_coxian(z, n):
     return lams, ps
 
 
-def rho_direct(n, targets, tau_fine, tau_coarse, seed=0, n_random=3000,
-               n_refine=25, grid=(16, 8, 6), penalty=1e4):
+RHO_SANITY_CAP = 1e6
+
+
+def coxian_moment_residual(z, n, targets):
+    """Relative mismatch vector of (mass, m_1..m_K) for a Coxian(n)."""
+    kmax = len(targets)
+    tgt = np.concatenate([[1.0], np.asarray(targets, dtype=float)])
+    lams, ps = unpack_coxian(z, n)
+    modes = coxian_modes(lams, ps)
+    if modes is None:
+        return np.full(kmax + 1, 1e3)
+    got = moment_values(*modes, kmax)
+    return (got - tgt) / np.maximum(np.abs(tgt), 1e-12)
+
+
+def project_coxian(z, n, targets):
+    try:
+        res = least_squares(coxian_moment_residual, z, method="trf",
+                            args=(n, targets),
+                            bounds=(np.full(2 * n - 1, -30.0), np.full(2 * n - 1, 30.0)),
+                            xtol=1e-15, ftol=1e-15, gtol=1e-15, max_nfev=600)
+    except Exception:
+        return z, np.inf
+    return res.x, float(np.max(np.abs(coxian_moment_residual(res.x, n, targets))))
+
+
+def rho_direct(n, targets, tau_fine, tau_coarse, seed=0, n_random=1500,
+               n_refine=15, grid=(16, 8, 6), moment_tol=1e-8):
     """Lower bound on the classical supremum, over genuine Coxian(n) models.
 
-    Nonnegativity of the density is automatic here (the rates are a real
-    Markov chain), so only the moment constraints need enforcing; they are
-    imposed by penalty, which keeps the search unconstrained and robust.
+    Nonnegativity of the density is automatic here -- the rates are a real
+    Markov chain -- so only the moments need enforcing.  They are enforced by
+    projecting onto the constraint set and then rejecting anything that drifts
+    off it, NOT by a penalty: the ratio is unbounded above on degenerate
+    models, so any finite penalty is eventually outbid and the search runs away
+    to a model that matches no moments at all.
     """
     rng = np.random.default_rng(seed)
     kmax = len(targets)
-    tgt = np.concatenate([[1.0], np.asarray(targets, dtype=float)])
 
-    def fun(z):
+    def evaluate(z):
+        if np.max(np.abs(coxian_moment_residual(z, n, targets))) > moment_tol:
+            return None
         lams, ps = unpack_coxian(z, n)
         if np.min(np.diff(np.sort(lams))) < 1e-8:
-            return 1e6
+            return None
         modes = coxian_modes(lams, ps)
         if modes is None:
-            return 1e6
-        rates, coeffs = modes
-        got = moment_values(rates, coeffs, kmax)  # (mass, m_1..m_K)
-        miss = np.sum(((got - tgt) / np.maximum(np.abs(tgt), 1e-12)) ** 2)
-        rho = rho_of_modes(rates, coeffs, tau_fine, tau_coarse, grid)
-        if rho is None:
-            return 1e6
-        return -rho + penalty * miss
+            return None
+        rho = rho_of_modes(*modes, tau_fine, tau_coarse, grid)
+        if rho is None or not np.isfinite(rho) or rho > RHO_SANITY_CAP:
+            return None
+        return rho
 
-    best = {"val": np.inf, "z": None}
+    def fun(z):
+        rho = evaluate(z)
+        return 1e6 if rho is None else -rho
+
+    feasible = []
     for _ in range(n_random):
         z = np.concatenate([rng.uniform(-3.2, 3.2, n), rng.uniform(-4.0, 6.0, n - 1)])
-        val = fun(z)
-        if val < best["val"]:
-            best = {"val": val, "z": z}
-    for k in range(n_refine):
-        z0 = best["z"] + (0.0 if k == 0 else rng.normal(0, 0.4, 2 * n - 1))
-        res = minimize(fun, z0, method="Nelder-Mead",
-                       options={"maxiter": 3000, "xatol": 1e-10, "fatol": 1e-12})
-        if res.fun < best["val"]:
-            best = {"val": res.fun, "z": res.x}
+        z, resid = project_coxian(z, n, targets)
+        if resid > moment_tol:
+            continue
+        rho = evaluate(z)
+        if rho is not None:
+            feasible.append((rho, z))
 
-    lams, ps = unpack_coxian(best["z"], n)
+    if not feasible:
+        return None
+    feasible.sort(key=lambda pair: -pair[0])
+    best = feasible[0]
+    for _, z0 in feasible[:n_refine]:
+        res = minimize(fun, z0, method="Nelder-Mead",
+                       options={"maxiter": 600, "xatol": 1e-10, "fatol": 1e-12})
+        for cand in (res.x, project_coxian(res.x, n, targets)[0]):
+            rho = evaluate(cand)
+            if rho is not None and rho > best[0]:
+                best = (rho, cand)
+
+    lams, ps = unpack_coxian(best[1], n)
     rates, coeffs = coxian_modes(lams, ps)
-    got = moment_values(rates, coeffs, kmax)[1:]
     return {
-        "rho": rho_of_modes(rates, coeffs, tau_fine, tau_coarse, grid),
+        "rho": best[0],
         "lams": lams,
         "ps": ps,
-        "moment_error": float(np.max(np.abs((got - targets) / np.abs(targets)))),
+        "moment_error": float(np.max(np.abs(
+            (moment_values(rates, coeffs, kmax)[1:] - targets) / np.abs(targets)))),
+        "n_feasible": len(feasible),
         "certification": "multistart lower bound",
     }

@@ -1,0 +1,99 @@
+{
+  "scan": "CRITICAL_ORDER",
+  "model": "coherent two-node dimer, gamma_phi = 0",
+  "fixed": {
+    "theta": 1.0,
+    "Gamma_drain": 0.1,
+    "tau_fine": 0.2,
+    "tau_coarse": 8.0
+  },
+  "quantum": {
+    "m1": 20.1,
+    "m2": 802.02,
+    "m3": 48120.006,
+    "m4": 3849623.76,
+    "I_fine": 645.2151143799789,
+    "I_coarse": 4.113239364133668,
+    "rho_quantum": 156.86294020162143
+  },
+  "definitions": {
+    "K": "number of moments m_1..m_K the classical model must reproduce, on top of unit mass",
+    "rho_relaxed": "supremum over n-term exponential sums with nonnegative density matching the moments. Every order-n phase-type density is such a sum, so this is an UPPER bound on the classical supremum. The search maximises it, so an incomplete search UNDER-reports and the figure is only a lower estimate of the true bound.",
+    "rho_direct": "supremum over genuine Coxian(n) models, located by multistart. A LOWER bound on the classical supremum. Never usable as the bound itself, but it must not exceed rho_relaxed -- if it does, the relaxed search has not converged.",
+    "certifies": "rho_relaxed < rho_quantum, i.e. no order-n classical renewal process matching the moments can reach the observed Fisher ratio"
+  },
+  "weight_counting": "n weights against 1+K linear constraints. K = n-1 is square and leaves the freedom that makes the relaxation loose; K = n is over-determined by one, collapsing the feasible pole sets onto a variety and tightening the bound; K = n+1 can empty the class outright, at which point the moments alone falsify order n and the Fisher ratio does no work.",
+  "rows": [
+    {
+      "n": 2, "K": 1,
+      "rho_relaxed": 29.933862,
+      "certification": "exhaustive",
+      "note": "the moment-matched APH2 set is exactly one-parameter and was scanned in full; rho is maximal at the pure hypoexponential endpoint, confirming the endpoint-maximizer proposition the frozen module assumes",
+      "certifies": true
+    },
+    {
+      "n": 3, "K": 2,
+      "rho_relaxed": 206.3,
+      "rho_direct": 50.4544,
+      "relaxed_maximizer_rates": [0.05133221, 0.57136818, 1.24628648],
+      "consistency": "OK",
+      "note": "relaxed bound exceeds rho_quantum, so order 3 is NOT certified at K=2. The maximizer has near-coincident poles and a density grazing zero -- outside the phase-type class proper -- and the relaxation is about 4x looser than the direct search.",
+      "certifies": false
+    },
+    {
+      "n": 3, "K": 3,
+      "rho_relaxed": 28.208,
+      "rho_direct": 28.2876,
+      "relaxed_maximizer_rates": [0.04568371, 0.05148707, 4.97113451],
+      "n_feasible_relaxed": 653,
+      "consistency": "VIOLATED by 0.28%",
+      "note": "rho_direct exceeds the relaxed figure, so the relaxed search is NOT converged and the true upper bound is at least 28.2876. The verdict is unaffected -- both sit far below rho_quantum -- and the near-equality shows the relaxation is close to tight here, unlike at K=2.",
+      "violation_using_direct": 5.545,
+      "certifies": true
+    },
+    {
+      "n": 3, "K": 4,
+      "rho_relaxed": null,
+      "class_empty": true,
+      "note": "no order-3 pole set with a nonnegative density survives five constraints on three weights. The moments alone falsify order 3, so the Fisher ratio does no work at this K.",
+      "certifies": null
+    },
+    {
+      "n": 4, "K": 3,
+      "rho_relaxed": 198.542,
+      "relaxed_maximizer_rates": [0.04658216, 0.12230021, 0.25011694, 0.57789802],
+      "n_feasible_relaxed": 29,
+      "note": "four weights against four constraints is square again, and the freedom that made K=2 loose at order 3 returns.",
+      "certifies": false
+    },
+    {
+      "n": 4, "K": 4,
+      "rho_relaxed": 33.054,
+      "n_feasible_relaxed": 132,
+      "violation": 4.746,
+      "certifies": true
+    },
+    {
+      "n": 5, "K": 3,
+      "rho_relaxed": 1118.579,
+      "n_feasible_relaxed": 69,
+      "note": "under-determined weights; the relaxation carries no useful information here.",
+      "certifies": false
+    }
+  ],
+  "conclusion": {
+    "rule": "matching K moments certifies that classical order K cannot reproduce the record; certifying a higher order requires a correspondingly higher moment.",
+    "certified_statement": "with (m1, m2, m3) matched, no order-3 classical renewal process reaches the observed finite-resolution Fisher ratio, by a factor of 5.5",
+    "caveat": "rho_relaxed is obtained by maximising an upper-bound functional, so every figure here is a lower estimate of the true bound and none is a proof. Only the n=2 row is exhaustive. The K=3 row is known to be under-converged, detected by the direct search exceeding it."
+  },
+  "not_supported": {
+    "claim": "n* ~ 2 pi theta / (Gamma + 2 gamma_phi) ~ 63",
+    "reason": "the O'Cinneide cone bound gives the order needed to reproduce the waiting-time density exactly (62.8 at gamma_phi = 0, 31.4 at 0.1, 15.7 at 0.3). A witness constrained only by a few moments and one Fisher ratio certifies far less; the order it reaches is set by how many moments are matched, and is single-digit here."
+  },
+  "provenance": {
+    "kernel": "numerics/fisher_kernel.py",
+    "classes": "numerics/ph_classes.py",
+    "driver": "numerics/order_scan.py regenerates this scan with its own budget; the figures above come from targeted runs with n_random 600-3000, n_refine 8-30, seeds 5 and 11",
+    "quadrature": "adaptive, order 16, per_period 8, per_decay 6"
+  }
+}

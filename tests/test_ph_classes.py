@@ -162,12 +162,17 @@ def test_matching_four_moments_over_determines_order_three_further():
 
 
 def test_relaxed_maximizer_at_order_three_stays_under_the_quantum_ratio():
-    """Regression on the Phase 1a result: rho_relaxed(n=3, K=3) ~= 28.2.
+    """Regression on the Phase 1a result: rho at (n=3, K=3) ~= 28.2.
 
     Locks the maximizer located by the search rather than re-running it.  The
-    bound only has to fall below rho_quantum = 156.86 to certify the witness at
-    order 3; it does not have to be tight, and it is not -- the maximizer sits
-    on the positivity boundary, which is outside the phase-type class proper.
+    bound only has to fall below rho_quantum = 156.86 to certify order 3; it
+    does not have to be tight.
+
+    The relaxed search is known to under-converge here: a direct Coxian(3)
+    search reaches 28.2876, which exceeds this maximizer's 28.208 and so proves
+    the true upper bound is at least that.  The margin to 156.86 is a factor of
+    5.5, so the verdict does not turn on it -- but no figure at this K is a
+    proof, only a lower estimate of the bound.
     """
     m = quantum_moments(0.0, 3)
     rates = np.array([0.04568371, 0.05148707, 4.97113451], dtype=complex)

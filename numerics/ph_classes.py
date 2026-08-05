@@ -159,10 +159,14 @@ def coeffs_from_moments(rates, targets):
 
 def rho_of_modes(rates, coeffs, tau_fine, tau_coarse, grid=(16, 8, 6)):
     rates = np.asarray(rates, dtype=complex)
-    if np.any(np.real(rates) <= 0):
+    if not np.all(np.isfinite(rates)) or np.any(np.real(rates) <= 0):
         return None
-    xs, ws = fk.adaptive_quadrature(rates, [tau_fine, tau_coarse],
-                                    order=grid[0], per_period=grid[1], per_decay=grid[2])
+    try:
+        xs, ws = fk.adaptive_quadrature(rates, [tau_fine, tau_coarse],
+                                        order=grid[0], per_period=grid[1],
+                                        per_decay=grid[2])
+    except ValueError:
+        return None  # rates the quadrature cannot bracket are not usable models
     dens = fk.mode_density(coeffs, rates, xs, tau_fine)
     if dens.min() < -1e-14 * max(dens.max(), 1e-300):
         return None
@@ -335,7 +339,9 @@ def coxian_modes(lams, ps):
 
 
 def unpack_coxian(z, n):
-    lams = np.exp(z[:n])
+    # same log box as the pole search: an unclipped exponent lets Nelder-Mead
+    # drive a rate to zero, and the integration range then has no finite end
+    lams = np.exp(np.clip(np.asarray(z[:n], dtype=float), LOG_RATE_LO, LOG_RATE_HI))
     ps = 1.0 / (1.0 + np.exp(-np.clip(z[n:], -40.0, 40.0)))
     return lams, ps
 

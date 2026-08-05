@@ -47,8 +47,12 @@ def quadrature(order=16):
     return panel_quadrature(edges, order)
 
 
+MAX_PANELS = 20000
+
+
 def adaptive_quadrature(rates, taus, order=16, per_period=8, per_decay=6,
-                        tail_decades=45.0, fast_decays=30.0, detector_decays=12.0):
+                        tail_decades=45.0, fast_decays=30.0, detector_decays=12.0,
+                        max_panels=MAX_PANELS):
     """Panel layout driven by the poles actually present.
 
     The fixed layout above was tuned for two well-separated real poles.  With
@@ -67,13 +71,17 @@ def adaptive_quadrature(rates, taus, order=16, per_period=8, per_decay=6,
     rates = np.asarray(rates, dtype=complex)
     re, im = np.real(rates), np.abs(np.imag(rates))
     taus = np.atleast_1d(np.asarray(taus, dtype=float))
-    if np.any(re <= 0):
-        raise ValueError("all rates must have positive real part")
+    if not np.all(np.isfinite(rates)) or np.any(re <= 0):
+        raise ValueError("all rates must be finite with positive real part")
 
     # the convolved modes carry the detector poles 1/tau as well as the density's
     fast_re = re.max()
     slow_re = min(re.min(), (1.0 / taus).min())
     t_max = tail_decades / slow_re
+    if not np.isfinite(t_max):
+        # a rate underflowed to zero: the integration range is unbounded and the
+        # panel walk below would never terminate
+        raise ValueError("integration range is not finite; a rate underflowed")
 
     # (range, width) pairs; each is active on [0, range)
     limits = [(detector_decays * tau, tau / per_decay) for tau in taus]
@@ -85,8 +93,12 @@ def adaptive_quadrature(rates, taus, order=16, per_period=8, per_decay=6,
     edges, t = [0.0], 0.0
     while t < t_max:
         h = min([h_slow] + [w for r, w in limits if t < r])
+        if not (h > 0.0):
+            raise ValueError("panel width underflowed")
         t = min(t + h, t_max)
         edges.append(t)
+        if len(edges) > max_panels:
+            raise ValueError(f"panel count exceeded {max_panels}")
     return panel_quadrature(np.asarray(edges), order)
 
 

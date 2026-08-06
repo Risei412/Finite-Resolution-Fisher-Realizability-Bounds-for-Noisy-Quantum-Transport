@@ -44,3 +44,20 @@ The PH2 value uses T2's endpoint-maximizer proposition. Its monotonicity over
 the complete moment-matched PH2 interval remains computer-certified rather
 than analytically proved.
 
+## Update: superseded caveats
+
+Two items above have since been resolved by follow-on work in this
+repository; this file is left as the original decision record and not
+rewritten, but the resolutions are:
+
+- **The endpoint-maximizer proposition** was checked directly: the
+  moment-matched order-2 family is exactly one-parameter, and a full scan of
+  it confirms `q=1` (the pure hypoexponential) is the maximum. See
+  `tests/test_ph_classes.py::test_ph2_endpoint_maximizes_the_moment_matched_family`.
+- **"Arbitrary classical order"** is addressed for order 3 and 4: matching
+  `(m1, m2, m3)` falsifies order 3 with violation 5.5, and `(m1..m4)`
+  falsifies order 4 with violation 4.7. See `results/order_scan.json` and
+  the top-level `README.md`. This is not a claim of unbounded order — the
+  order reached is set by how many moments are matched, and the search
+  above order 2 is a lower estimate of the true bound, not a proof.
+

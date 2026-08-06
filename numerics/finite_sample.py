@@ -243,19 +243,30 @@ def deconvolve_moments(m_obs, tau, kmax):
     return m_true[1:]
 
 
-def bootstrap_moment_ci(samples, kmax, n_boot, rng, alpha=0.05):
-    """Percentile bootstrap CI for (m1, ..., m_kmax)."""
+def bootstrap_moment_ci(samples, kmax, n_boot, rng, alpha=0.05, transform=None):
+    """Percentile bootstrap CI for (m1, ..., m_kmax), or a transform of them.
+
+    `transform`, if given, maps a raw-moment vector to whatever the caller
+    actually wants a CI for (e.g. deconvolve_moments), and is applied to EACH
+    bootstrap replicate before taking percentiles. Applying it only to the
+    already-percentiled lo/hi endpoints would be wrong whenever the transform
+    mixes components -- deconvolve_moments does, since m_k_true depends on
+    m_1_obs..m_k_obs jointly, so bumping one observed moment up can push a
+    lower-order true moment down.
+    """
     n = len(samples)
-    boots = np.empty((n_boot, kmax))
+    dim = kmax if transform is None else len(transform(moment_estimates(samples, kmax)))
+    boots = np.empty((n_boot, dim))
     for b in range(n_boot):
         idx = rng.integers(0, n, n)
-        boots[b] = moment_estimates(samples[idx], kmax)
+        raw = moment_estimates(samples[idx], kmax)
+        boots[b] = raw if transform is None else transform(raw)
     lo = np.percentile(boots, 100 * alpha / 2, axis=0)
     hi = np.percentile(boots, 100 * (1 - alpha / 2), axis=0)
     return lo, hi, boots
 
 
-def certified_bound(rho_fn, m_hat, m_lo, m_hi, n_grid=15):
+def certified_bound(rho_fn, m_hat, m_lo, m_hi, n_grid=15, refine_passes=3):
     """Worst-case rho over an axis-aligned box CI, by grid search.
 
     A one-sided certificate needs the SUPREMUM of the classical bound over the
@@ -265,20 +276,35 @@ def certified_bound(rho_fn, m_hat, m_lo, m_hi, n_grid=15):
     expensive per point -- and is adequate because rho is smooth and, in the
     two-moment case checked here, monotone in cv^2, so a boundary grid already
     brackets the interior optimum.
+
+    `rho_fn` can be infeasible (return NaN) on part of the box -- e.g. a fixed
+    pole layout only reproduces moments that put it on the right side of the
+    positivity boundary. If the whole grid misses the feasible region (all
+    NaN), the box is halved around m_hat and retried, up to `refine_passes`
+    times, before giving up; a caller silently propagating -inf from a coarse
+    grid that happened to miss would understate the bound rather than fail
+    loudly.
     """
-    grids = [np.linspace(lo, hi, n_grid) for lo, hi in zip(m_lo, m_hi)]
-    best = -np.inf
-    if len(grids) == 2:
-        for m1 in grids[0]:
-            for m2 in grids[1]:
-                val = rho_fn(m1, m2)
-                if val == val and val > best:
-                    best = val
-    else:
+    m_hat = np.asarray(m_hat, dtype=float)
+    m_lo = np.asarray(m_lo, dtype=float)
+    m_hi = np.asarray(m_hi, dtype=float)
+
+    def scan(lo, hi):
+        grids = [np.linspace(a, b, n_grid) for a, b in zip(lo, hi)]
+        best = -np.inf
         mesh = np.meshgrid(*grids, indexing="ij")
         for idx in np.ndindex(mesh[0].shape):
             point = [g[idx] for g in mesh]
             val = rho_fn(*point)
             if val == val and val > best:
                 best = val
-    return best
+        return best
+
+    lo, hi = m_lo, m_hi
+    for _ in range(refine_passes + 1):
+        best = scan(lo, hi)
+        if np.isfinite(best):
+            return best
+        lo = m_hat - 0.5 * (m_hat - lo)
+        hi = m_hat + 0.5 * (hi - m_hat)
+    return np.nan  # no feasible point found anywhere in or near the CI

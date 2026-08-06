@@ -172,6 +172,32 @@ def test_bootstrap_ci_covers_the_true_moments(dimer):
     assert lo[1] < m2_analytic < hi[1]
 
 
+def test_deconvolve_moments_recovers_true_moments_from_jittered_observations(dimer):
+    """The comparison classes use moments of T_true; only T_obs is observable.
+
+    Because the tau jitter is exactly Exp(tau), its contribution can be
+    subtracted exactly (not just asymptotically); this checks that recovery
+    with finite N.
+    """
+    import ph_classes as pc
+
+    m_true_analytic = pc.quantum_moments_k(dimer, X0, SURVIVAL, 3)
+    rng = np.random.default_rng(9)
+    t_true = fs.sample_true_intervals(dimer, X0, SURVIVAL, 400_000, rng)
+    t_obs = fs.observed_intervals(t_true, frozen.TAU_FINE, rng)
+    m_obs = fs.moment_estimates(t_obs, 3)
+    m_deconv = fs.deconvolve_moments(m_obs, frozen.TAU_FINE, 3)
+    assert np.all(np.abs(m_deconv - m_true_analytic) / np.abs(m_true_analytic) < 0.02)
+
+
+def test_deconvolve_moments_is_identity_at_tau_zero(dimer):
+    rng = np.random.default_rng(10)
+    t_true = fs.sample_true_intervals(dimer, X0, SURVIVAL, 10_000, rng)
+    m_obs = fs.moment_estimates(t_true, 3)
+    m_deconv = fs.deconvolve_moments(m_obs, 0.0, 3)
+    assert np.allclose(m_deconv, m_obs)
+
+
 def test_certified_bound_is_at_least_the_point_estimate():
     """The worst-case-over-CI bound cannot be smaller than rho at the center."""
     def rho_fn(m1, m2):

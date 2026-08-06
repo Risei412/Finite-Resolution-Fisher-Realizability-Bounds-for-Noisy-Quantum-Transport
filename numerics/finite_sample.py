@@ -216,6 +216,33 @@ def moment_estimates(samples, kmax):
     return np.array([np.mean(samples**k) for k in range(1, kmax + 1)])
 
 
+def deconvolve_moments(m_obs, tau, kmax):
+    """Recovers raw moments of T_true from raw moments of T_true + Exp(tau).
+
+    The comparison classes in ph_classes.py are built from the moments of the
+    UNDETECTED process (m1, m2, m3 of the record before the tau_fine jitter is
+    added), but only T_obs = T_true + Exp(tau) is observable. Because the
+    jitter's distribution is known exactly, its contribution can be subtracted
+    off. Binomial expansion of E[(T+J)^k] for independent T, J gives a
+    triangular system in the true moments (E[J^n] = n! tau^n for J ~ Exp(tau)):
+
+        m_k_obs = m_k_true + sum_{i=0}^{k-1} C(k,i) m_i_true (k-i)! tau^(k-i)
+
+    with m_0_true = 1, solved here by forward substitution for k = 1..kmax
+    rather than by a hand-derived closed form, so it generalizes to any kmax.
+    """
+    from math import comb, factorial
+
+    m_obs = np.asarray(m_obs, dtype=float)
+    m_true = np.zeros(kmax + 1)
+    m_true[0] = 1.0
+    for k in range(1, kmax + 1):
+        tail = sum(comb(k, i) * m_true[i] * factorial(k - i) * tau ** (k - i)
+                  for i in range(k))
+        m_true[k] = m_obs[k - 1] - tail
+    return m_true[1:]
+
+
 def bootstrap_moment_ci(samples, kmax, n_boot, rng, alpha=0.05):
     """Percentile bootstrap CI for (m1, ..., m_kmax)."""
     n = len(samples)

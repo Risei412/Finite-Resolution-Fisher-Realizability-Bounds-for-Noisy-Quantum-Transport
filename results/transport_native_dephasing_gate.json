@@ -1,0 +1,147 @@
+{
+  "gate": "TRANSPORT_NATIVE_DEPHASING_PERTURBATION",
+  "model": "coherent two-node dimer + unobserved local pure dephasing",
+  "convention": "gamma_phi is the off-diagonal coherence-decay rate",
+  "fixed": {
+    "theta": 1.0,
+    "Gamma_drain": 0.1,
+    "tau_fine": 0.2,
+    "tau_coarse": 8.0
+  },
+  "rows": [
+    {
+      "gamma_phi": 0.0,
+      "m1": 20.1,
+      "m2": 802.02,
+      "cv2": 0.9851488824534043,
+      "I_fine": 645.2153335138003,
+      "I_coarse": 4.113238694168503,
+      "rho_quantum": 156.86309049570764,
+      "rho_PH2_endpoint": 29.933862476871287,
+      "B2": 123.1251214057856,
+      "violation": 5.240322414687031,
+      "fine_mass": 0.9999999999999992,
+      "coarse_mass": 0.999999999999999,
+      "max_abs_tangent_mass": 2.1716553928349645e-15
+    },
+    {
+      "gamma_phi": 0.001,
+      "m1": 20.102,
+      "m2": 802.140808,
+      "cv2": 0.9850528497083537,
+      "I_fine": 559.6393918889232,
+      "I_coarse": 3.889040536436941,
+      "rho_quantum": 143.90166074269138,
+      "rho_PH2_endpoint": 29.89197936282445,
+      "B2": 116.25111945636077,
+      "violation": 4.814055937749528,
+      "fine_mass": 1.0000000000000002,
+      "coarse_mass": 0.9999999999999984,
+      "max_abs_tangent_mass": 2.5293404891674245e-15
+    },
+    {
+      "gamma_phi": 0.003,
+      "m1": 20.106,
+      "m2": 802.382472,
+      "cv2": 0.9848608997202914,
+      "I_fine": 457.3609366552179,
+      "I_coarse": 3.4892236676064434,
+      "rho_quantum": 131.07813663575223,
+      "rho_PH2_endpoint": 29.8087110098987,
+      "B2": 104.00925995657931,
+      "violation": 4.397309786130121,
+      "fine_mass": 0.9999999999999988,
+      "coarse_mass": 0.999999999999999,
+      "max_abs_tangent_mass": 2.5695460268589317e-16
+    },
+    {
+      "gamma_phi": 0.01,
+      "m1": 20.119999999999997,
+      "m2": 803.2287999999999,
+      "cv2": 0.9841902857210614,
+      "I_fine": 277.64959600623524,
+      "I_coarse": 2.4682154621207797,
+      "rho_quantum": 112.49001566810894,
+      "rho_PH2_endpoint": 29.522588570249304,
+      "B2": 72.86810959091953,
+      "violation": 3.8103032666135555,
+      "fine_mass": 1.0000000000000018,
+      "coarse_mass": 0.9999999999999999,
+      "max_abs_tangent_mass": 1.9498856313736772e-15
+    },
+    {
+      "gamma_phi": 0.03,
+      "m1": 20.16,
+      "m2": 805.6512,
+      "cv2": 0.982284580498866,
+      "I_fine": 105.86073085001593,
+      "I_coarse": 1.133393598674681,
+      "rho_quantum": 93.40156056448774,
+      "rho_PH2_endpoint": 28.747446230654315,
+      "B2": 32.58217153606819,
+      "violation": 3.249038534243459,
+      "fine_mass": 0.9999999999999989,
+      "coarse_mass": 0.9999999999999999,
+      "max_abs_tangent_mass": 8.493867645397305e-16
+    },
+    {
+      "gamma_phi": 0.1,
+      "m1": 20.3,
+      "m2": 814.1800000000001,
+      "cv2": 0.9757334562838216,
+      "I_fine": 15.259832847569358,
+      "I_coarse": 0.2433008252643465,
+      "rho_quantum": 62.72002090822972,
+      "rho_PH2_endpoint": 26.43732453570024,
+      "B2": 6.4322228773172245,
+      "violation": 2.3724042432332486,
+      "fine_mass": 1.0000000000000002,
+      "coarse_mass": 0.9999999999999988,
+      "max_abs_tangent_mass": 3.7016822815760286e-16
+    },
+    {
+      "gamma_phi": 0.3,
+      "m1": 20.7,
+      "m2": 838.98,
+      "cv2": 0.9579920184835122,
+      "I_fine": 1.2819069265630225,
+      "I_coarse": 0.058590059936377344,
+      "rho_quantum": 21.87925610513181,
+      "rho_PH2_endpoint": 21.96329897218274,
+      "B2": 1.2868310031807617,
+      "violation": 0.9961734861799506,
+      "fine_mass": 1.0000000000000002,
+      "coarse_mass": 1.0,
+      "max_abs_tangent_mass": 1.0907591942884545e-16
+    },
+    {
+      "gamma_phi": 1.0,
+      "m1": 22.1,
+      "m2": 930.82,
+      "cv2": 0.9058168342171533,
+      "I_fine": 0.19396442177561105,
+      "I_coarse": 0.0700998147238452,
+      "rho_quantum": 2.7669748135529946,
+      "rho_PH2_endpoint": 15.096900610213337,
+      "B2": 1.0582899356802606,
+      "violation": 0.18328098495138026,
+      "fine_mass": 0.9999999999999958,
+      "coarse_mass": 0.9999999999999997,
+      "max_abs_tangent_mass": 1.1716624409258035e-16
+    }
+  ],
+  "convergence": [
+    {
+      "gamma_phi": 0.0,
+      "max_relative_change_12_to_20": 5.5826540408885614e-05
+    },
+    {
+      "gamma_phi": 0.1,
+      "max_relative_change_12_to_20": 4.351263058554632e-07
+    }
+  ],
+  "pass_definition": "summary-matched I_fine > B2=(PH2 endpoint ratio)*I_coarse",
+  "verdict": "PASS_OPEN_DEPHASING_SET",
+  "repository_decision": "CREATE",
+  "caveat": "Uses the T2 endpoint-maximizer proposition; its global monotonicity remains computer-certified rather than analytic."
+}

@@ -1,0 +1,223 @@
+{
+  "study": "FINITE_SAMPLE_CERTIFIED_VIOLATION",
+  "order_and_moments": {
+    "n": 3,
+    "K": 3
+  },
+  "fixed": {
+    "theta": 1.0,
+    "Gamma_drain": 0.1,
+    "tau_fine": 0.2,
+    "tau_coarse": 8.0
+  },
+  "limitations": {
+    "I_coarse": "held at its theoretical (quadrature) value; the variational chi2 estimator recovers at most ~72% of it and gets worse as delta shrinks, which is the unsafe direction for a one-sided certificate. Not yet finite-sample validated.",
+    "rho_worst_case": "evaluated at a FIXED pole layout (the best located Coxian(3) optimum) with weights re-solved per grid point, not a re-certified supremum at each point in the moment CI."
+  },
+  "rows": [
+    {
+      "gamma_phi": 0.0,
+      "n_events": 1000,
+      "delta": 0.05,
+      "theory": {
+        "I_fine": 645.2153335138003,
+        "I_coarse": 4.113238694168503
+      },
+      "data_driven": {
+        "I_fine_hat": -104339.18736083401,
+        "I_fine_lower_95": 0.0,
+        "I_fine_bootstrap_std": 956.8322133877067,
+        "m_hat": [
+          18.60387888954885,
+          699.7214990347652,
+          39424.45644775499
+        ],
+        "m_ci_lo": [
+          17.83449581951045,
+          636.3823108584859,
+          32883.33691795885
+        ],
+        "m_ci_hi": [
+          19.510431691612695,
+          770.4739484533104,
+          45560.71787784786
+        ],
+        "rho_point_estimate": NaN,
+        "rho_worst_case": 32.31516064864968
+      },
+      "B_n_certified": 132.91996918829722,
+      "violation_certified_lower_95": 0.0,
+      "certifies_at_95": false
+    },
+    {
+      "gamma_phi": 0.0,
+      "n_events": 3000,
+      "delta": 0.05,
+      "theory": {
+        "I_fine": 645.2153335138003,
+        "I_coarse": 4.113238694168503
+      },
+      "data_driven": {
+        "I_fine_hat": 333.9420068040517,
+        "I_fine_lower_95": 283.0239813537025,
+        "I_fine_bootstrap_std": 30.953206960698594,
+        "m_hat": [
+          19.70401660568224,
+          768.5439177304872,
+          45156.219080940326
+        ],
+        "m_ci_lo": [
+          19.05163515228061,
+          718.0448210704666,
+          39664.55896440222
+        ],
+        "m_ci_hi": [
+          20.20763484864541,
+          818.8140095899838,
+          50174.39792965884
+        ],
+        "rho_point_estimate": NaN,
+        "rho_worst_case": 23.821847553202673
+      },
+      "B_n_certified": 97.98494512241652,
+      "violation_certified_lower_95": 2.888443535893287,
+      "certifies_at_95": true
+    },
+    {
+      "gamma_phi": 0.0,
+      "n_events": 10000,
+      "delta": 0.05,
+      "theory": {
+        "I_fine": 645.2153335138003,
+        "I_coarse": 4.113238694168503
+      },
+      "data_driven": {
+        "I_fine_hat": 313.42476945295533,
+        "I_fine_lower_95": 276.7636484939897,
+        "I_fine_bootstrap_std": 22.28639571973594,
+        "m_hat": [
+          19.730464386082414,
+          772.6971480674794,
+          45591.55893986216
+        ],
+        "m_ci_lo": [
+          19.43667351943171,
+          747.0242620483981,
+          42562.93641889945
+        ],
+        "m_ci_hi": [
+          20.08661893873953,
+          803.6390309137197,
+          49403.83635265777
+        ],
+        "rho_point_estimate": NaN,
+        "rho_worst_case": 27.876241764964913
+      },
+      "B_n_certified": 114.66163627564977,
+      "violation_certified_lower_95": 2.413742359551212,
+      "certifies_at_95": true
+    },
+    {
+      "gamma_phi": 0.0,
+      "n_events": 30000,
+      "delta": 0.05,
+      "theory": {
+        "I_fine": 645.2153335138003,
+        "I_coarse": 4.113238694168503
+      },
+      "data_driven": {
+        "I_fine_hat": 313.73925869183785,
+        "I_fine_lower_95": 284.2037918793842,
+        "I_fine_bootstrap_std": 17.9546910714004,
+        "m_hat": [
+          20.054602748386873,
+          797.6316063366611,
+          47313.74103720169
+        ],
+        "m_ci_lo": [
+          19.89416718185425,
+          782.0959210181999,
+          45639.10531150613
+        ],
+        "m_ci_hi": [
+          20.24081649730444,
+          812.9388001236155,
+          48911.748176882116
+        ],
+        "rho_point_estimate": NaN,
+        "rho_worst_case": 25.075474254528302
+      },
+      "B_n_certified": 103.14141097835191,
+      "violation_certified_lower_95": 2.755477059927317,
+      "certifies_at_95": true
+    },
+    {
+      "gamma_phi": 0.0,
+      "n_events": 100000,
+      "delta": 0.05,
+      "theory": {
+        "I_fine": 645.2153335138003,
+        "I_coarse": 4.113238694168503
+      },
+      "data_driven": {
+        "I_fine_hat": 368.7126829537994,
+        "I_fine_lower_95": 355.2383880954649,
+        "I_fine_bootstrap_std": 8.191060704154687,
+        "m_hat": [
+          20.17236872781413,
+          809.4337857343369,
+          48891.582450006164
+        ],
+        "m_ci_lo": [
+          20.090202839570534,
+          802.3354545818056,
+          47897.77562768413
+        ],
+        "m_ci_hi": [
+          20.26227110907109,
+          817.1128809689003,
+          49812.035936014974
+        ],
+        "rho_point_estimate": 24.21232019439227,
+        "rho_worst_case": 25.205010880681094
+      },
+      "B_n_certified": 103.67422604135561,
+      "violation_certified_lower_95": 3.426487003180139,
+      "certifies_at_95": true
+    },
+    {
+      "gamma_phi": 0.0,
+      "n_events": 300000,
+      "delta": 0.05,
+      "theory": {
+        "I_fine": 645.2153335138003,
+        "I_coarse": 4.113238694168503
+      },
+      "data_driven": {
+        "I_fine_hat": 342.0806587822397,
+        "I_fine_lower_95": 333.686547935802,
+        "I_fine_bootstrap_std": 5.102802946162714,
+        "m_hat": [
+          20.179212925349823,
+          808.3348516079727,
+          48756.92290602916
+        ],
+        "m_ci_lo": [
+          20.120399150794704,
+          802.7334729566617,
+          48173.38673822795
+        ],
+        "m_ci_hi": [
+          20.24338612880393,
+          813.5770710676685,
+          49384.7229682144
+        ],
+        "rho_point_estimate": 24.08383554191124,
+        "rho_worst_case": 25.158234898111484
+      },
+      "B_n_certified": 103.48182525989255,
+      "violation_certified_lower_95": 3.224590860257392,
+      "certifies_at_95": true
+    }
+  ]
+}
